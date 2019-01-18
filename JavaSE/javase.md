@@ -817,8 +817,6 @@ abstract：抽象的，可以用来修饰类、方法
 
 #### 工厂方法设计模式
 
-
-
 #### 代理模式
 
 #### 内部类
@@ -843,4 +841,243 @@ abstract：抽象的，可以用来修饰类、方法
 
 ​	②如何区分调用外部类、内部类的变量(尤其是变量重名时)
 
+​		重名时可以通过 外部类名点this点属性 例如 People.this.name
+
 ​	③局部内部类的使用 （见TestInnerClass1.java）
+
+### 6. 异常处理
+
+**1.体系结构**
+   java.lang.Object
+           |----java.lang.Throwable
+    			|-------java.lang.Error：错误，java程序对此无能为力，不显式的处理
+ 			|-------java.lang.Exception:异常。需要进行处理
+ 				|------RuntimeException:运行时异常
+					|-----ArrayIndexOutOfBoundsException/NullPointerException/ArithmeticException/ClassCastException
+				|------非RuntimeException:编译时异常
+				
+2.因为java程序分为javac.exe和java.exe两个过程，在每个过程中，都有可能出现异常。故分为编译时异常、运行时异常
+  2.1 对于运行时异常比较常见，可以不显式的来处理。
+  2.2 对于编译时异常，必须要显式的处理
+        编译时异常，不是说有异常才处理，而是存在异常的隐患，必须在编译前，提示程序，万一出现异常，如何处理！
+
+**2.如何处理异常？**
+   java 中的“抓抛模型”
+
+1."抛"：当我们执行代码时，一旦出现异常，就会在异常的代码处生成一个对应的异常类型的对象，并将此对象抛出。(自动抛出   / 手动抛出)
+
+ * 一旦抛出此异常类的对象，那么程序就终止执行
+
+ * 此异常类的对象抛给方法的调用者。
+
+   2."抓"：抓住上一步抛出来的异常类的对象。如何抓？即为异常处理的方式
+
+   java 提供了两种方式用来处理一个异常类的对象。
+
+
+
+**处理的方式一：**
+
+   ```java
+   try{
+   
+   //可能出现异常的代码
+   
+   }catch(Exception1 e1){
+   
+   //处理的方式1
+   
+   }catch(Exception2 e2){
+   
+   //处理的方式2
+   
+   }finally{
+   
+   //一定要执行的代码 
+   
+   }
+   ```
+
+   注：1.try内声明的变量，类似于局部变量，出了try{}语句，就不能被调用
+
+   ​	2.finally是可选的。
+
+   ​	3.catch语句内部是对异常对象的处理：
+
+   ​			getMessage();  printStackTrace();
+
+   4.可以有多个catch语句，try中抛出的异常类对象从上往下去匹配catch中的异常类的类型，一旦满足就执行catch中的代码。执行完，就跳出其后的多条catch语句
+
+   5.如果异常处理了，那么其后的代码继续执行。
+
+   6.若catch中多个异常类型是"并列"关系，孰上孰下都可以。若catch中多个异常类型是"包含"关系，须将子类放在父类的上面，进行处理。否则报错！
+
+   7.finally中存放的是一定会被执行的代码，不管try中、catch中是否仍有异常未被处理，以及是否有return语句。
+
+   8.try-catch是可以嵌套的。
+
+   
+
+   **处理方式二：**
+
+在方法的声明处，显式的使用throws + 异常类型
+
+   ```java
+    public void method1()  throws Exception1 e1,Exception2 e2{
+   	//可能出现异常（尤其是编译时异常，一定要处理）
+    }
+   public void method2() throws Exception1 e1,Exception2 e2{
+   	method1();
+   }
+    public void method3(){
+   try{
+   	method2();
+    }catch(Exception1 e1){
+   	System.out.println(e1.getMessage());    
+   }catch(Exception2 e2){
+   	System.out.println(e2.getMessage());    
+   }
+    }
+   public static void main(String[] args){
+   对象1.method3();//不会再出现上述的Exception1和Exception2的异常！
+   }
+   ```
+
+   
+
+   **3.如何手动的抛出一个异常？**
+   在方法的内部，可以使用  throw + 异常类对象，来手动的抛出一个异常！
+
+```java
+ //比较两个圆的半径的大小。
+   public int compareTo(Object obj) throws Exception{
+   	if(this == obj){
+   		return 0;
+   	}
+   	else if(obj instanceof Circle){
+   		Circle c = (Circle)obj;
+   		if(this.radius > c.radius){
+   			return 1;
+   		}else if(this.radius == c.radius){
+   			return 0;
+   		}else{
+   			return -1;
+   		}
+   	}else{
+   		//return -2;
+   		//手动的抛出一个异常
+   		//throw new Exception("传入的类型有误！");
+   		//throw new String("传入的类型有误！");
+   		throw new MyException("传入的类型有误！");
+   	}
+   }
+```
+
+
+   **4.如何自定义一个异常类？**
+
+手动的抛出一个异常，除了抛出的是现成的异常类的对象之外，还可以抛出一个自定义的异常类的对象！
+如何自定义一个异常类呢？
+
+```java
+//1.自定义的异常类继承现有的异常类
+//2.提供一个序列号，提供几个重载的构造器
+public class MyException extends Exception{
+	static final long serialVersionUID = -70348975766939L;
+	public MyException(){}
+	public MyException(String msg){
+		super(msg);
+	}
+}
+```
+
+**finally一定会执行, 如果try或者catch里有return 会在return前执行, 如果finally里return了, 则直接跳出了方法不会再去执行try和catch里的return了.**
+
+```java
+public class TestFinally {
+	public static void main(String[] args) {
+		int i = method1();
+		System.out.println(i);
+	}	
+	public static int method1(){
+		try{
+			System.out.println(10/0);
+			return 1;			
+		}catch(Exception e){
+			e.printStackTrace();
+			return 3;
+		}finally{
+			System.out.println("我是帅哥！");
+			return 2;
+		}
+	}	
+}
+```
+
+上面的方法返回值是2, 而不是1或者3.
+
+**5. “5个关键字搞定异常处理！”  其中，要区分：throw与throws的区别？**
+
+### 7. 集合
+
+1.对象的存储：①数组（基本数据类型  & 引用数据类型）  ②集合（引用数据类型）
+    >数组存储数据的弊端：长度一旦初始化以后，就不可变；真正给数组元素赋值的个数没有现成的方法可用。
+2.集合框架
+**Collection接口** ：
+
+​	方法：
+
+​		①add(Object obj),addAll(Collection coll),size(),clear(),isEmpty();
+​		②remove(Object obj),removeAll(Collection coll),retainAll(Collection coll),equals(Object obj),contains(Object obj) containsAll(Collection coll),hashCode()
+​		③ iterator(),toArray();
+
+|------List接口：存储有序的，可以重复的元素.---相当于“动态”数组
+		新增的方法：删除remove(int index) 修改set(int index,Object obj) 获取get(int index)插入add(int index,Object obj)
+		添加进List集合中的元素（或对象）所在的类一定要重写equals()方法
+
+​	|------ArrayList（主要的实现类）
+​	|------LinkedList（更适用于频繁的插入、删除操作）
+​	|------Vector（古老的实现类、线程安全的，但效率要低于ArrayList）
+
+|------Set接口：存储无序的，不可重复的元素。---相当于高中的“集合”概念
+
+​		Set使用的方法基本上都是Collection接口下定义的。
+
+​		添加进Set集合中的元素所在的类一定要重写equals() 和 hashCode()。要求重写equals() 和 hashCode()方法保持一致。
+​		1.无序性：无序性！= 随机性。真正的无序性，指的是元素在底层存储的位置是无序的。
+​		2.不可重复性：当向Set中添加进相同的元素的时候，后面的这个不能添加进去。
+
+​	|------HashSet（主要的实现类）
+​	|------LinkedHashSet(是HashSet的子类，当我们遍历集合元素时，是按照添加进去的顺序实现的；频繁的遍历，较少的添加、插入操作建议选择此)
+​	|------TreeSet（可以按照添加进集合中的元素的指定属性进行排序）
+​		要求TreeSet添加进的元素必须是同一个类的！
+​		两种排序方式：自然排序：①要求添加进TreeSet中的元素所在的类implements Comparable接口
+​							②重写compareTo(Object obj)，在此方法内指明按照元素的哪个属性进行排序
+​							③向TreeSet中添加元素即可。若不实现此接口，会报运行时异常
+​					定制排序：①创建一个实现Comparator接口的实现类的对象。在实现类中重写Comparator的compare(Object o1,Object o2)方法
+​							②在此compare()方法中指明按照元素所在类的哪个属性进行排序
+​							③将此实现Comparator接口的实现类的对象作为形参传递给TreeSet的构造器中
+​							④向TreeSet中添加元素即可。若不实现此接口，会报运行时异常
+​		要求重写的compareTo()或者compare()方法与equals()和hashCode()方法保持一致。
+**Map接口**：存储“键-值”对的数据 
+
+key是不可重复的，使用Set存放。value可以重复的，使用Collection来存放的。一个key-value对构成一个entry(Map.Entry)，entry使用Set来存放。
+添加、修改 put(Object key,Object value)  删除remove(Object key)  获取get(Object key) size() / keySet() values()  entrySet()
+
+|-----HashMap：主要的实现类，可以添加null键，null值
+      	|-----LinkedHashMap：是HashMap的子类，可以按照添加进Map的顺序实现遍历
+      	|-----TreeMap：需要按照key所在类的指定属性进行排序。要求key是同一个类的对象。对key考虑使用自然排序 或 定制排序
+      	|-----Hashtable：是一个古老的实现类，线程安全的，不可以添加null键，null值不建议使用。
+      		|-----子类：Properties：常用来处理属性文件
+
+Iterator接口：用来遍历集合Collection元素
+
+Collections工具类：操作Collection及Map的工具类，大部分为static的方法。
+
+附：Properties的使用
+Properties pros = new Properties();
+		pros.load(new FileInputStream(new File("jdbc.properties")));
+		String user = pros.getProperty("user");
+		System.out.println(user);
+		String password = pros.getProperty("password");
+		System.out.println(password);				
