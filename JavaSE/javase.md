@@ -1081,3 +1081,57 @@ Properties pros = new Properties();
 		System.out.println(user);
 		String password = pros.getProperty("password");
 		System.out.println(password);				
+
+
+
+### 8. 泛型
+
+为什么要有泛型?
+
+解决元素存储安全性的问题, 解决获取数据元素时, 需要类型强转的问题. 
+
+泛型类
+
+
+
+泛型方法
+
+
+
+泛型的使用
+
+1. 集合中泛型的使用
+2. 自定义泛型类、泛型接口、泛型方法
+3. 泛型与继承的关系
+4. 通配符
+
+
+
+### 9. 枚举enum
+
+一、枚举类
+1.如何自定义枚举类。 枚举类：类的对象是有限个的，确定的。
+   1.1 私有化类的构造器，保证不能在类的外部创建其对象 
+   1.2 在类的内部创建枚举类的实例。声明为：public static final 
+   1.3 若类有属性，那么属性声明为：private final 。此属性在构造器中赋值。
+2.使用enum关键字定义枚举类
+
+	>2.1其中常用的方法：values()  valueOf(String name);
+	>2.2枚举类如何实现接口  ：①让类实现此接口，类的对象共享同一套接口的抽象方法的实现。
+	>					 ①让类的每一个对象都去实现接口的抽象方法，进而通过类的对象调用被重写的抽象方法时，执行的效果不同
+
+### 10. 注解Annotation
+
+1.JDK提供的常用的三个注解
+@Override: 限定重写父类方法, 该注释只能用于方法
+@Deprecated: 用于表示某个程序元素(类, 方法等)已过时
+@SuppressWarnings: 抑制编译器警告
+
+2.如何自定义注解
+以SuppressWarnings为例进行创建即可
+
+3.元注解：可以对已有的注解进行解释说明。
+Retention: SOURCE   CLASS  RUNTIME
+Target:
+Documented:javadoc
+Inherited
